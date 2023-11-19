@@ -138,6 +138,6 @@ while(True):
   except Exception as e:
     print("Error: ", e)
   if POLLING:
-    time.sleep(60*60)
+    time.sleep(POLLING_PERIOD_MINUTES*60)
   else:
     break
