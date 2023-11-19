@@ -36,8 +36,10 @@ mqtt:
 
 ## Desired improvements
 Non-browser-based scraping. Maybe someone can figure out how to authenticate and get the results from an HTTP endpoint directly.
+(If this isn't possible, at least replace the dumb sleeps in the script with smarter polling)
 
 Attribute data to the correct day in HA, not just the current.
 
-Debug MQTT auto-discrovery
+Debug MQTT auto-discovery
 
+Create an actual HA addon or integration, rather than a script.
