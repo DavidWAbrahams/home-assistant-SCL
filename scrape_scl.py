@@ -140,4 +140,4 @@ while(True):
   if POLLING:
     time.sleep(60*60)
   else:
-    return
+    break
