@@ -33,7 +33,7 @@ POLLING = config.getboolean("DEFAULT", "polling")
 POLLING_PERIOD_MINUTES = config.getint("DEFAULT", "polling_period_minutes")
 
 
-file_path_template = os.path.join(TEMP_DIR, '\DailyUsage*.csv')
+file_path_template = os.path.join(TEMP_DIR, 'DailyUsage*.csv')
 
 
 while(True):
@@ -41,7 +41,8 @@ while(True):
     yesterday = (date.today() - timedelta(days=1))
 
     for f in glob.glob(file_path_template):
-        os.remove(f)
+      print(f'removing old data from {f}')
+      os.remove(f)
 
     options = Options()
     options.add_experimental_option("prefs", {
@@ -67,8 +68,11 @@ while(True):
       time.sleep(4)
       driver.find_element(By.XPATH, "//button[text()=\"Daily\"]").click()
       time.sleep(10)
+      # Download all the days in the default view. This often includes today.
       WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".export-link"))).click()
       time.sleep(10)
+      # But sometimes it doesn't include today. so also download yesterday's data specifically.
+      # It would be great if we could click to download just today's data, but it's forbidden by the UI.
       start_date = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[placeholder=\'Start Date\']")))
       start_date.clear()
       start_date.send_keys(yesterday.strftime("%m-%d-%Y"))
@@ -82,21 +86,16 @@ while(True):
 
     driver.quit()
 
-    # send to MQTT
-    client = mqtt.Client()
-    client.username_pw_set(MQTT_USER_NAME, password=MQTT_PASSWORD)
-    client.connect(MQTT_ADDRESS)
-
+    # Parse out the latest reading for each meter from the CSV file
     latest_readings = {}
     latest_dates = {}
     for filename in glob.glob(file_path_template):
       with open(filename, 'r', newline='') as csvfile:
-        next(csvfile) # skip the non-csv download date line 
+        next(csvfile) # skip the (non-csv) download-date line 
         next(csvfile) # skip the empty line
         csv_reader = csv.DictReader(csvfile)
         for row in csv_reader:
           if row:
-            row["Day"] == yesterday.strftime("%b %d")
             meter_id = row["Meter ID"]
             reading_date = datetime.strptime(row["Day"], "%b %d")
             reading = float(row["Consumption (kWh)"])
@@ -104,7 +103,12 @@ while(True):
               latest_readings[meter_id] = reading
               latest_dates[meter_id] = reading_date
 
-    print(latest_readings)
+    print(f'latest meter readings: {latest_readings}')
+    
+    # send to MQTT
+    client = mqtt.Client()
+    client.username_pw_set(MQTT_USER_NAME, password=MQTT_PASSWORD)
+    client.connect(MQTT_ADDRESS)
     for meter_id in meter_ids:        
       config_payload = {
         "name": f"Seattle City Light meter {meter_id}",
@@ -136,7 +140,10 @@ while(True):
                      qos=0).rc)
     client.disconnect()	 # gracefully disconnect
   except Exception as e:
-    print("Error: ", e)
+    if POLLING:
+      print("Error: ", e)
+    else:
+      raise
   if POLLING:
     time.sleep(POLLING_PERIOD_MINUTES*60)
   else:
