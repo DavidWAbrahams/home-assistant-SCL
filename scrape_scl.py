@@ -85,6 +85,7 @@ while(True):
       time.sleep(10)
 
     driver.quit()
+    driver = None
 
     # Parse out the latest reading for each meter from the CSV file
     latest_readings = {}
@@ -138,12 +139,20 @@ while(True):
                      payload=json.dumps(latest_readings[str(meter_id)]),
                      retain=False,
                      qos=0).rc)
-    client.disconnect()	 # gracefully disconnect
   except Exception as e:
     if POLLING:
       print("Error: ", e)
     else:
       raise
+  finally:
+    if driver:
+      driver.quit() 	 # gracefully quit webdriver
+      driver = None
+    if client:
+      client.disconnect()	 # gracefully disconnect MQTT
+      client = None
+      
+
   if POLLING:
     time.sleep(POLLING_PERIOD_MINUTES*60)
   else:
