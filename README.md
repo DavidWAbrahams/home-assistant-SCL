@@ -12,9 +12,9 @@ The data on SCL's site is a day behind. But Home Assistant assumes all sensor re
 My personal account has 2 power meters. I haven't debugged this on normal accounts with just 1 meter. Hopefully it still works.
 
 ## Prereqs
-Home Assistant with MQTT configured
-
-run `pip install -r requirements.txt`
+* Home Assistant with MQTT configured
+* A machine with a web browser (which we will control with selenium)
+* on that machine, run `pip install -r requirements.txt`
 
 ## Use
 Create an account at https://myutilities.seattle.gov/eportal/
