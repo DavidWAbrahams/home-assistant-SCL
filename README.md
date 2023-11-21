@@ -15,11 +15,11 @@ My personal account has 2 power meters. I haven't debugged this on normal accoun
 * Home Assistant with MQTT configured
 * A machine with a web browser (which we will control with selenium)
 * on that machine, run `pip install -r requirements.txt`
+* Create an account at https://myutilities.seattle.gov/eportal/
 
 ## Use
-Create an account at https://myutilities.seattle.gov/eportal/
 
-Fill out `config.ini` using the name and password to your SCL account above, and your MQTT server details, and a good temp directory. For non-windows users, you'll want to replace c:/temp.
+Fill out `config.ini` using the name and password to your SCL account above, and your MQTT server details, and a good temp directory. (For non-windows users, you'll want to replace c:/temp)
 
 If you'd prefer to do your own scheduling, set polling=false. Otherwise the script will loop at intervals.
 
